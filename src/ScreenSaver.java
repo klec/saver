@@ -13,7 +13,9 @@ import java.awt.geom.Rectangle2D;
 
 public class ScreenSaver extends JPanel implements ActionListener
 {
-    private MyPoint[] mypoints = new MyPoint[10];
+    private int pointsCount = 250;
+
+    private MyPoint[] mypoints = new MyPoint[pointsCount];
 
     // no-argument constructor
     public ScreenSaver()
@@ -25,8 +27,8 @@ public class ScreenSaver extends JPanel implements ActionListener
     public void addPoints(){
         GraphicsDevice monitor = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         this.setSize(monitor.getDisplayMode().getWidth(), monitor.getDisplayMode().getHeight());
-        mypoints = new MyPoint[100];
-        for(int i=0; i<100; i++) {
+        mypoints = new MyPoint[pointsCount];
+        for(int i=0; i<pointsCount; i++) {
             mypoints[i] = new MyPoint(getSize());
         }
         createScreenUpdate();
@@ -42,7 +44,7 @@ public class ScreenSaver extends JPanel implements ActionListener
 
         g2.setRenderingHints(rh);
 
-        for(int j=0; j<100; j++){
+        for(int j=0; j<pointsCount; j++){
             mypoints[j].render(g2);
         }
 
@@ -50,7 +52,7 @@ public class ScreenSaver extends JPanel implements ActionListener
 
     private void createScreenUpdate()
     {
-        Timer autoUpdate = new Timer(30, this );
+        Timer autoUpdate = new Timer(40, this );
         autoUpdate.start();
 
     }
@@ -130,6 +132,8 @@ class MyPoint extends Line2D {
             this.vy--;
         else
             this.vy++;
+        vx = vx*0.999;
+        vy = vy*0.999;
         //setLocation(getX()+1, getY());
         this.x=this.x+this.vx;
         this.y=this.y+this.vy;
@@ -171,7 +175,6 @@ class MyPoint extends Line2D {
 
     @Override
     public void setLine(double v, double v2, double v3, double v4) {
-        //this.gr.dra
     }
 
     @Override
