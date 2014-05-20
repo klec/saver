@@ -1,21 +1,24 @@
 // Tutorial 20: ScreenSaver.java
 // Program simulates screen saver by drawing random shapes.
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class ScreenSaver extends JPanel implements ActionListener
 {
     private int pointsCount = 250;
 
-    private MyPoint[] mypoints = new MyPoint[pointsCount];
+    private int ri = 0;
+    private ArrayList<MyPoint> mypoints = new ArrayList();
 
     // no-argument constructor
     public ScreenSaver()
@@ -27,16 +30,30 @@ public class ScreenSaver extends JPanel implements ActionListener
     public void addPoints(){
         GraphicsDevice monitor = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         this.setSize(monitor.getDisplayMode().getWidth(), monitor.getDisplayMode().getHeight());
-        mypoints = new MyPoint[pointsCount];
+        //mypoints = new MyPoint[pointsCount];
 
-        //todo add image parser
-        for(int i=0; i<pointsCount; i++) {
-            mypoints[i] = new MyPoint(getSize());
+        try {
+            BufferedImage img = ImageIO.read(new File(getClass().getResource("speroteck_logo.png").getFile()));
+            for(int i = 1; i < img.getHeight(); i++){
+            for(int j = 1; j < img.getWidth(); j++){
+                int rgb = img.getRGB(j, i);
+                if(rgb!=16777215){
+                    Color c = new Color(rgb);
+                    mypoints.add(new MyPoint(getSize(), new Point(j, i), c));
+                }
+            }
         }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         createScreenUpdate();
     }
 
     public void paint(Graphics g){
+
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
@@ -46,8 +63,16 @@ public class ScreenSaver extends JPanel implements ActionListener
 
         g2.setRenderingHints(rh);
 
-        for(int j=0; j<pointsCount; j++){
-            mypoints[j].render(g2);
+        ri++;
+        if(ri==20){
+            for(MyPoint p: mypoints){
+                p.revert();
+                ri=0;
+            }
+        }
+
+        for(MyPoint p: mypoints){
+            p.render(g2);
         }
 
     }
@@ -108,81 +133,4 @@ public class ScreenSaver extends JPanel implements ActionListener
 
 } // end class ScreenSaver
 
-class MyPoint extends Line2D {
 
-    private double x,y,vx,vy,slower=0.001;
-    private Color c;
-
-    private Dimension ssize;
-    public MyPoint(Dimension size) {
-        int x = size.width;
-        int y = size.height;
-        ssize=size;
-        this.x= Math.random()*x;
-        this.y= Math.random()*y;
-        this.vx=0;
-        this.vy=0;
-        this.c = new Color((float)Math.random(), (float)Math.random(), (float)Math.random());
-    }
-
-    public void render(Graphics2D g) {
-
-        //todo refacktor this
-        if(this.x>ssize.width/2)
-            this.vx--;
-        else
-            this.vx++;
-
-        if(this.y>ssize.height/2)
-            this.vy--;
-        else
-            this.vy++;
-        vx = vx*(1-slower);
-        vy = vy*(1-slower);
-        this.x=this.x+this.vx;
-        this.y=this.y+this.vy;
-        g.setColor(this.c);
-        g.draw(this);
-
-    }
-
-    //todo refacktor this (change a type of Line)
-    @Override
-    public double getX1() {
-        return x;
-    }
-
-    @Override
-    public double getY1() {
-        return y;
-    }
-
-    @Override
-    public Point2D getP1() {
-        return null;
-    }
-
-    @Override
-    public double getX2() {
-        return x+vx;
-    }
-
-    @Override
-    public double getY2() {
-        return y+vy;
-    }
-
-    @Override
-    public Point2D getP2() {
-        return null;
-    }
-
-    @Override
-    public void setLine(double v, double v2, double v3, double v4) {
-    }
-
-    @Override
-    public Rectangle2D getBounds2D() {
-        return null;
-    }
-}
