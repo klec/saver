@@ -28,6 +28,8 @@ public class ScreenSaver extends JPanel implements ActionListener
         GraphicsDevice monitor = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         this.setSize(monitor.getDisplayMode().getWidth(), monitor.getDisplayMode().getHeight());
         mypoints = new MyPoint[pointsCount];
+
+        //todo add image parser
         for(int i=0; i<pointsCount; i++) {
             mypoints[i] = new MyPoint(getSize());
         }
@@ -60,6 +62,7 @@ public class ScreenSaver extends JPanel implements ActionListener
     // main method
     public static void main( String[] args )
     {
+        //todo make a screensaver
         JFrame frame = new JFrame("TimerBasedAnimation");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        frame.setSize(300,400);
@@ -75,6 +78,7 @@ public class ScreenSaver extends JPanel implements ActionListener
         .setFullScreenWindow(frame);
 
 
+        //todo refacktor this
         MouseListener ml = new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -106,7 +110,7 @@ public class ScreenSaver extends JPanel implements ActionListener
 
 class MyPoint extends Line2D {
 
-    private double x,y,vx,vy;
+    private double x,y,vx,vy,slower=0.001;
     private Color c;
 
     private Dimension ssize;
@@ -123,6 +127,7 @@ class MyPoint extends Line2D {
 
     public void render(Graphics2D g) {
 
+        //todo refacktor this
         if(this.x>ssize.width/2)
             this.vx--;
         else
@@ -132,17 +137,16 @@ class MyPoint extends Line2D {
             this.vy--;
         else
             this.vy++;
-        vx = vx*0.999;
-        vy = vy*0.999;
-        //setLocation(getX()+1, getY());
+        vx = vx*(1-slower);
+        vy = vy*(1-slower);
         this.x=this.x+this.vx;
         this.y=this.y+this.vy;
-        //System.out.println(x+"_"+vx+"_"+ssize.width/2);
         g.setColor(this.c);
         g.draw(this);
 
     }
 
+    //todo refacktor this (change a type of Line)
     @Override
     public double getX1() {
         return x;
