@@ -15,8 +15,6 @@ import java.util.ArrayList;
 
 public class ScreenSaver extends JPanel implements ActionListener
 {
-    private int pointsCount = 250;
-
     private int ri = 0;
     private ArrayList<MyPoint> mypoints = new ArrayList();
 
@@ -34,15 +32,15 @@ public class ScreenSaver extends JPanel implements ActionListener
 
         try {
             BufferedImage img = ImageIO.read(new File(getClass().getResource("speroteck_logo.png").getFile()));
-            for(int i = 1; i < img.getHeight(); i++){
-            for(int j = 1; j < img.getWidth(); j++){
-                int rgb = img.getRGB(j, i);
-                if(rgb!=16777215){
-                    Color c = new Color(rgb);
-                    mypoints.add(new MyPoint(getSize(), new Point(j, i), c));
+            for(int i = 1; i < img.getHeight(); i+=2){
+                for(int j = 1; j < img.getWidth(); j+=2){
+                    int rgb = img.getRGB(j, i);
+                    if(rgb!=16777215){
+                        Color c = new Color(rgb);
+                        mypoints.add(new MyPoint(getSize(), new Point(j, i), c));
+                    }
                 }
             }
-        }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,22 +62,24 @@ public class ScreenSaver extends JPanel implements ActionListener
         g2.setRenderingHints(rh);
 
         ri++;
-        if(ri==20){
+        if(ri==5){
             for(MyPoint p: mypoints){
                 p.revert();
-                ri=0;
+                ri=-1;
             }
-        }
+        }else{
 
-        for(MyPoint p: mypoints){
-            p.render(g2);
+            for(MyPoint p: mypoints){
+                p.render(g2);
+            }
         }
 
     }
 
     private void createScreenUpdate()
     {
-        Timer autoUpdate = new Timer(40, this );
+        Timer autoUpdate = new Timer(540, this );
+        autoUpdate.setInitialDelay(2000);
         autoUpdate.start();
 
     }

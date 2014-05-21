@@ -11,24 +11,25 @@ public class MyPoint extends Line2D {
     protected double y;
     protected double vx;
     protected double vy;
-    protected double slower=0.001;
+    protected double slower=0.05;
     protected Color c;
     protected Dimension ssize;
 
     public MyPoint(Dimension size,Point pos, Color c) {
 
-        this.x= size.width/2+pos.getX();
-        this.y= size.height/2+pos.getY();
-        this.vx=Math.random()*20-10;
-        this.vy=Math.random()*14-7;
+        ssize = new Dimension((int)size.getWidth()/2, (int)size.getHeight()/2);
+        this.x= ssize.width-165+pos.getX();
+        this.y= ssize.height-80+pos.getY();
+
         this.c = c;
-        ssize=size;
+        //ssize=size;
     }
 
     public MyPoint(Dimension size, Color c) {
         int x = size.width;
         int y = size.height;
-        ssize=size;
+        //ssize=size;
+        ssize = new Dimension((int)size.getWidth()/2, (int)size.getHeight()/2);
         this.x= Math.random()*x;
         this.y= Math.random()*y;
         this.vx=0;
@@ -43,24 +44,47 @@ public class MyPoint extends Line2D {
     }
 
     public void render(Graphics2D g) {
+        g.setColor(this.c);
+        g.draw(this);
+        move1();
+    }
 
-        //todo refacktor this
-        if(this.x>ssize.width/2)
+    private void move1() {
+        //todo make it revertable
+        if(vx == 0)
+            this.vx=Math.random()*80-40;
+        if(vy == 0)
+            this.vy=Math.random()*60-30;
+
+        this.x=this.x+this.vx;
+        this.y=this.y+this.vy;
+
+        if(this.x>ssize.width)
             this.vx--;
         else
             this.vx++;
 
-        if(this.y>ssize.height/2)
+        if(this.y>ssize.height)
             this.vy--;
         else
             this.vy++;
+    }
+
+    private void move2() {
+        if(vx == 0)
+            this.vx=Math.random()*80-40;
+        if(vy == 0)
+            this.vy=Math.random()*40-40;
+
+        if(this.y>ssize.height+80){
+            this.vy=-vy*0.5;
+            this.vx=vx*0.5;
+        }else{
+            this.vy++;}
         vx = vx*(1-slower);
         vy = vy*(1-slower);
         this.x=this.x+this.vx;
         this.y=this.y+this.vy;
-        g.setColor(this.c);
-        g.draw(this);
-
     }
 
     //todo refacktor this (change a type of Line)
@@ -81,12 +105,14 @@ public class MyPoint extends Line2D {
 
     @Override
     public double getX2() {
-        return x+vx;
+        return x;
+//        return x+vx;
     }
 
     @Override
     public double getY2() {
-        return y+vy;
+        return y;
+//        return y+vy;
     }
 
     @Override
