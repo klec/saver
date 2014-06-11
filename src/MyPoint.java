@@ -11,7 +11,7 @@ public class MyPoint extends Line2D {
     protected double y;
     protected double vx;
     protected double vy;
-    protected double slower=0.05;
+    protected double slower=0.005;
     protected Color c;
     protected Dimension ssize;
 
@@ -46,7 +46,7 @@ public class MyPoint extends Line2D {
     public void render(Graphics2D g) {
         g.setColor(this.c);
         g.draw(this);
-        move1();
+        //move3();
     }
 
     private void move1() {
@@ -85,6 +85,28 @@ public class MyPoint extends Line2D {
         vy = vy*(1-slower);
         this.x=this.x+this.vx;
         this.y=this.y+this.vy;
+    }
+
+    public void move3(){
+
+        if(this.x>ssize.width)
+            this.vx--;
+        else
+            this.vx++;
+
+        if(this.y>ssize.height)
+            this.vy--;
+        else
+            this.vy++;
+        vx = vx*(1-slower);
+        vy = vy*(1-slower);
+        this.x=this.x+this.vx;
+        this.y=this.y+this.vy;
+    }
+
+    public void init(){
+        this.vx=Math.random()*20+20;
+        this.vy=Math.random()*6-3;
     }
 
     //todo refacktor this (change a type of Line)

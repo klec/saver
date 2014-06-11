@@ -61,24 +61,31 @@ public class ScreenSaver extends JPanel implements ActionListener
 
         g2.setRenderingHints(rh);
 
-        ri++;
-        if(ri==5){
-            for(MyPoint p: mypoints){
-                p.revert();
-                ri=-1;
-            }
-        }else{
+        ri+=10;
+//        if(ri==5){
+//            for(MyPoint p: mypoints){
+//                p.revert();
+//                ri=-1;
+//            }
+//        }else{
 
             for(MyPoint p: mypoints){
+                if(p.x<700+ri&&p.vx==0 && p.vy==0){
+                    p.init();
+                }
+                if(p.vx!=0 || p.vy!=0){
+                    p.move3();
+                }
+
                 p.render(g2);
             }
-        }
+//        }
 
     }
 
     private void createScreenUpdate()
     {
-        Timer autoUpdate = new Timer(540, this );
+        Timer autoUpdate = new Timer(5, this );
         autoUpdate.setInitialDelay(2000);
         autoUpdate.start();
 
