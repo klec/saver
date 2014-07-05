@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 public class Alpinizm extends JPanel implements ActionListener
 {
@@ -85,8 +86,9 @@ public class Alpinizm extends JPanel implements ActionListener
         private Lapa handl, handr, footl, footr;
 
         private Alpinist(){
-            body = new Line2D.Double(110,30,110,150);
+            body = new Line2D.Double(100,100,100,150);
             handl = new Lapa(true);
+            handl.MoveTo(new Point2D.Double(20, 10));
         }
         public void render(Graphics2D g) {
             g.setColor(Color.black);
@@ -96,12 +98,24 @@ public class Alpinizm extends JPanel implements ActionListener
     }
 
     public class Lapa{
-        private Line2D root;
-        private Line2D branch;
+        private int rootl=40, branchl=35;
+        private Line2D root, branch;
         private boolean down;
 
         public Lapa(boolean dir){
             down = dir;
+        }
+
+        public void MoveTo(Point2D.Double vect){
+            Double R = vect.distance(0,0);
+            Double p1 = Math.asin(vect.getX()/R);
+            Double p2 = Math.asin((Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2))/(2*R*branchl));
+            Double p3 = Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2);
+            Double q1 = Math.PI-p1-p2;
+            Double x1 = rootl*Math.cos(q1);
+            Double y1 = rootl*Math.sin(q1);
+            root = new Line2D.Double(0,0,x1,y1);
+            branch = new Line2D.Double(x1,y1,vect.getX(),vect.getY());
         }
 
         public void render(Graphics2D g) {
