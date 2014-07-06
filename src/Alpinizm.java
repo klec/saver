@@ -3,10 +3,7 @@
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -21,6 +18,17 @@ public class Alpinizm extends JPanel implements ActionListener
         setOpaque(true);
         this.setBackground(Color.GRAY);
         alpinist = new Alpinist();
+
+        addMouseListener(
+            new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    System.out.println(e.getPoint());
+                    alpinist.handl.MoveTo(alpinist.body.getP1(), new Point(e.getX()-100, e.getY()-100));
+                    repaint();
+                }
+            }
+        );
     }
 
     public void paint(Graphics g){
@@ -52,27 +60,6 @@ public class Alpinizm extends JPanel implements ActionListener
         Alpinizm application = new Alpinizm();
         frame.add(application);
         frame.setVisible(true);
-
-        MouseListener ml = new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                System.exit(0);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent mouseEvent) { }
-
-            @Override
-            public void mouseReleased(MouseEvent mouseEvent) {}
-
-            @Override
-            public void mouseEntered(MouseEvent mouseEvent) {}
-
-            @Override
-            public void mouseExited(MouseEvent mouseEvent) {}
-        };
-
-        frame.addMouseListener(ml);
     }
 
     @Override
@@ -88,17 +75,17 @@ public class Alpinizm extends JPanel implements ActionListener
         private Alpinist(){
             body = new Line2D.Double(100,100,100,150);
             handl = new Lapa(true);
-            handl.MoveTo(new Point2D.Double(20, 10));
+            handl.MoveTo(body.getP1(), new Point2D.Double(40, -10));
         }
         public void render(Graphics2D g) {
             g.setColor(Color.black);
             handl.render(g);
-            //g.draw(foots);
+            g.draw(body);
         }
     }
 
     public class Lapa{
-        private int rootl=40, branchl=35;
+        private int rootl=30, branchl=30;
         private Line2D root, branch;
         private boolean down;
 
@@ -106,16 +93,15 @@ public class Alpinizm extends JPanel implements ActionListener
             down = dir;
         }
 
-        public void MoveTo(Point2D.Double vect){
-            Double R = vect.distance(0,0);
-            Double p1 = Math.asin(vect.getX()/R);
-            Double p2 = Math.asin((Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2))/(2*R*branchl));
-            Double p3 = Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2);
-            Double q1 = Math.PI-p1-p2;
-            Double x1 = rootl*Math.cos(q1);
-            Double y1 = rootl*Math.sin(q1);
-            root = new Line2D.Double(0,0,x1,y1);
-            branch = new Line2D.Double(x1,y1,vect.getX(),vect.getY());
+        public void MoveTo(Point2D start, Point2D end){
+            Double R = end.distance(0, 0);
+            Double p1 = Math.acos(end.getX()/R);
+            Double p2 = Math.acos((Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2))/(2*R*rootl));
+            Double q1 = -p1+p2; //plus minus for both sides
+            Point2D.Double lokot = new Point2D.Double((rootl*Math.cos(q1))+start.getX(), (rootl*Math.sin(q1))+start.getY());
+
+            root = new Line2D.Double(start,lokot);
+            branch = new Line2D.Double(lokot, new Point2D.Double(start.getX()+end.getX(),start.getY()+end.getY()));
         }
 
         public void render(Graphics2D g) {
