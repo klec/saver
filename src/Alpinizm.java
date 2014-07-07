@@ -18,7 +18,7 @@ public class Alpinizm extends JPanel implements ActionListener
         setOpaque(true);
         this.setBackground(Color.GRAY);
         alpinist = new Alpinist();
-
+        createScreenUpdate();
         addMouseListener(
             new MouseAdapter() {
                 @Override
@@ -45,7 +45,7 @@ public class Alpinizm extends JPanel implements ActionListener
 
     private void createScreenUpdate()
     {
-        Timer autoUpdate = new Timer(5, this );
+        Timer autoUpdate = new Timer(50, this );
         autoUpdate.setInitialDelay(2000);
         autoUpdate.start();
 
@@ -64,7 +64,13 @@ public class Alpinizm extends JPanel implements ActionListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
-          repaint();
+        alpinist.handl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+        alpinist.handr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+        alpinist.footl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+        alpinist.footr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+
+        repaint();
+        //System.out.println("qw");
     }
 
     public class Alpinist{
@@ -73,7 +79,8 @@ public class Alpinizm extends JPanel implements ActionListener
         private Lapa handl, handr, footl, footr;
 
         private Alpinist(){
-            body = new Line2D.Double(100,100,100,150);
+            body = new Line2D.Double(150,150,150,200);
+            head = new Ellipse2D.Double(145,130,10,16);
             handl = new Lapa(body.getP1(), true, false);
             handr = new Lapa(body.getP1(), true, true);
             footl = new Lapa(body.getP2(), false, false);
@@ -85,18 +92,30 @@ public class Alpinizm extends JPanel implements ActionListener
             handr.render(g);
             footl.render(g);
             footr.render(g);
+            g.setStroke(new BasicStroke(10.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.draw(body);
+            g.draw(head);
         }
 
         public void grab(Point point) {
             Lapa nearest = footl;
+            if(point.distance(footr.branch.getP2())<point.distance(nearest.branch.getP2())) {
+                nearest = footr;
+            }
+            if(point.distance(handl.branch.getP2())<point.distance(nearest.branch.getP2())) {
+                nearest = handl;
+            }
+            if(point.distance(handr.branch.getP2())<point.distance(nearest.branch.getP2())) {
+                nearest = handr;
+            }
             nearest.MoveTo(new Point2D.Double(point.getX(), point.getY()));
-            //@todo find nearest Lapa
+
         }
     }
 
     public class Lapa{
         private int rootl=30, branchl=32;
+        private float roots=6.0f, branchs=5.0f;
         private Line2D root, branch;
         private boolean isHand, isLeft;
 
@@ -134,8 +153,14 @@ public class Alpinizm extends JPanel implements ActionListener
 
         public void render(Graphics2D g) {
             g.setColor(Color.black);
+            g.setStroke(new BasicStroke(roots, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.draw(root);
+            g.setStroke(new BasicStroke(branchs, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.draw(branch);
+        }
+
+        public void MoveFor(Point2D.Double point) {
+            MoveTo(new Point2D.Double(branch.getX2()+point.getX(), branch.getY2()+point.getY()));
         }
     }
 } // end class ScreenSaver
