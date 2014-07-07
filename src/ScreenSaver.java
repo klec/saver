@@ -23,9 +23,10 @@ public class ScreenSaver extends JPanel implements ActionListener
     {
         setOpaque(true);
         this.setBackground(Color.BLACK);
+        addPoints();
     }
 
-    public void addPoints(){
+    private void addPoints(){
         GraphicsDevice monitor = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         this.setSize(monitor.getDisplayMode().getWidth(), monitor.getDisplayMode().getHeight());
         //mypoints = new MyPoint[pointsCount];
@@ -54,12 +55,15 @@ public class ScreenSaver extends JPanel implements ActionListener
 
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
         RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
         RenderingHints.VALUE_ANTIALIAS_ON);
 
         rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
         g2.setRenderingHints(rh);
+
+
 
         ri+=10;
 //        if(ri==5){
@@ -87,7 +91,7 @@ public class ScreenSaver extends JPanel implements ActionListener
     {
         Timer autoUpdate = new Timer(5, this );
         autoUpdate.setInitialDelay(2000);
-        autoUpdate.start();
+        //autoUpdate.start();
 
     }
 
@@ -99,8 +103,10 @@ public class ScreenSaver extends JPanel implements ActionListener
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        frame.setSize(300,400);
         ScreenSaver application = new ScreenSaver();
-        frame.add(application);
-        application.addPoints();
+        Logo logo = new Logo();
+        frame.add(logo);
+        //frame.add(application);
+
 //        frame.setVisible(true);
 
         frame.setUndecorated(true);

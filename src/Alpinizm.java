@@ -24,7 +24,7 @@ public class Alpinizm extends JPanel implements ActionListener
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     System.out.println(e.getPoint());
-                    alpinist.handl.MoveTo(alpinist.body.getP1(), new Point(e.getX()-100, e.getY()-100));
+                    alpinist.grab(e.getPoint());
                     repaint();
                 }
             }
@@ -74,30 +74,58 @@ public class Alpinizm extends JPanel implements ActionListener
 
         private Alpinist(){
             body = new Line2D.Double(100,100,100,150);
-            handl = new Lapa(true);
-            handl.MoveTo(body.getP1(), new Point2D.Double(40, -10));
+            handl = new Lapa(body.getP1(), true, false);
+            handr = new Lapa(body.getP1(), true, true);
+            footl = new Lapa(body.getP2(), false, false);
+            footr = new Lapa(body.getP2(), false, true);
         }
         public void render(Graphics2D g) {
             g.setColor(Color.black);
             handl.render(g);
+            handr.render(g);
+            footl.render(g);
+            footr.render(g);
             g.draw(body);
+        }
+
+        public void grab(Point point) {
+            Lapa nearest = footl;
+            nearest.MoveTo(new Point2D.Double(point.getX(), point.getY()));
+            //@todo find nearest Lapa
         }
     }
 
     public class Lapa{
-        private int rootl=30, branchl=30;
+        private int rootl=30, branchl=32;
         private Line2D root, branch;
-        private boolean down;
+        private boolean isHand, isLeft;
 
-        public Lapa(boolean dir){
-            down = dir;
+        public Lapa(Point2D start, boolean isHand, boolean isLeft){
+            this.isHand = isHand;
+            this.isLeft = isLeft;
+            int x,y;
+            if(isHand)  y = -10;
+            else y= 40;
+
+            if(isLeft) x=-20;
+            else x = 20;
+            MoveTo(start, new Point2D.Double(x,y));
+        }
+
+        public void MoveTo(Point2D end){
+            Point2D.Double relativeEnd = new Point2D.Double(end.getX()-root.getX1(),end.getY()-root.getY1());
+            MoveTo(root.getP1(), relativeEnd);
         }
 
         public void MoveTo(Point2D start, Point2D end){
             Double R = end.distance(0, 0);
             Double p1 = Math.acos(end.getX()/R);
             Double p2 = Math.acos((Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2))/(2*R*rootl));
-            Double q1 = -p1+p2; //plus minus for both sides
+            if(end.getX()<0 ) p2 = -p2;
+            if(end.getY()<0 ) p1 = -p1;
+            if(!isHand) {p2 = -p2;}
+
+            Double q1 = p1+p2; //plus minus for both sides
             Point2D.Double lokot = new Point2D.Double((rootl*Math.cos(q1))+start.getX(), (rootl*Math.sin(q1))+start.getY());
 
             root = new Line2D.Double(start,lokot);
