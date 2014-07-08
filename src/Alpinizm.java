@@ -62,12 +62,16 @@ public class Alpinizm extends JPanel implements ActionListener
         frame.setVisible(true);
     }
 
+    private void newPose(){
+        alpinist.handl.target = new Point2D.Double(-Math.random() * 40 -20, Math.random() * 60 -40);
+        alpinist.handr.target = new Point2D.Double( Math.random() * 40 + 20, Math.random() * 60-40);
+        alpinist.footl.target = new Point2D.Double(-Math.random() * 30, Math.random() * 20 + 40);
+        alpinist.footr.target = new Point2D.Double(Math.random() * 30, Math.random() * 20 + 40);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-//        alpinist.handl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-//        alpinist.handr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-//        alpinist.footl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-//        alpinist.footr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+        if(Math.random()>0.8) newPose();
         alpinist.handl.MoveFor();
         alpinist.handr.MoveFor();
         alpinist.footl.MoveFor();
