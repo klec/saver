@@ -64,11 +64,14 @@ public class Alpinizm extends JPanel implements ActionListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        alpinist.handl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-        alpinist.handr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-        alpinist.footl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-        alpinist.footr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
-
+//        alpinist.handl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+//        alpinist.handr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+//        alpinist.footl.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+//        alpinist.footr.MoveFor(new Point2D.Double(Math.random() * 4 - 2, Math.random() * 4 - 2));
+        alpinist.handl.MoveFor();
+        alpinist.handr.MoveFor();
+        alpinist.footl.MoveFor();
+        alpinist.footr.MoveFor();
         repaint();
         //System.out.println("qw");
     }
@@ -108,8 +111,8 @@ public class Alpinizm extends JPanel implements ActionListener
             if(point.distance(handr.branch.getP2())<point.distance(nearest.branch.getP2())) {
                 nearest = handr;
             }
-            nearest.MoveTo(new Point2D.Double(point.getX(), point.getY()));
-
+            //nearest.MoveTo(point);
+            nearest.target = new Point2D.Double(point.getX()-nearest.start.getX(), point.getY()-nearest.start.getY());
         }
     }
 
@@ -117,6 +120,7 @@ public class Alpinizm extends JPanel implements ActionListener
         private int rootl=30, branchl=32;
         private float roots=6.0f, branchs=5.0f;
         private Line2D root, branch;
+        private Point2D start, target;
         private boolean isHand, isLeft;
 
         public Lapa(Point2D start, boolean isHand, boolean isLeft){
@@ -128,12 +132,14 @@ public class Alpinizm extends JPanel implements ActionListener
 
             if(isLeft) x=-20;
             else x = 20;
-            MoveTo(start, new Point2D.Double(x,y));
+            target = new Point2D.Double(x,y);
+            this.start=start;
+            MoveTo(start, target);
         }
 
         public void MoveTo(Point2D end){
-            Point2D.Double relativeEnd = new Point2D.Double(end.getX()-root.getX1(),end.getY()-root.getY1());
-            MoveTo(root.getP1(), relativeEnd);
+            Point2D.Double relativeEnd = new Point2D.Double(end.getX()-start.getX(),end.getY()-start.getY());
+            MoveTo(start, relativeEnd);
         }
 
         public void MoveTo(Point2D start, Point2D end){
@@ -148,7 +154,7 @@ public class Alpinizm extends JPanel implements ActionListener
             Point2D.Double lokot = new Point2D.Double((rootl*Math.cos(q1))+start.getX(), (rootl*Math.sin(q1))+start.getY());
 
             root = new Line2D.Double(start,lokot);
-            branch = new Line2D.Double(lokot, new Point2D.Double(start.getX()+end.getX(),start.getY()+end.getY()));
+            branch = new Line2D.Double(lokot.getX(), lokot.getY(), start.getX()+end.getX(),start.getY()+end.getY());
         }
 
         public void render(Graphics2D g) {
@@ -157,6 +163,21 @@ public class Alpinizm extends JPanel implements ActionListener
             g.draw(root);
             g.setStroke(new BasicStroke(branchs, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.draw(branch);
+        }
+
+        public void MoveFor() {
+            Point2D.Double curent = new Point2D.Double(-start.getX() + branch.getX2(), - start.getY() + branch.getY2());
+            int length = 2;
+            if(target.distance(curent)<length) {
+                MoveTo(start, target);
+            }else{
+                if ((target.getX() - curent.getX()) != 0) {
+                    double a = Math.atan((target.getY() - curent.getY()) / (target.getX() - curent.getX()));
+                    if (target.getY() + start.getY() - branch.getY2() < 0) length = -length;
+                    if (a < 0) length = -length;
+                    MoveFor(new Point2D.Double(length * Math.cos(a), length * Math.sin(a)));
+                }
+            }
         }
 
         public void MoveFor(Point2D.Double point) {
