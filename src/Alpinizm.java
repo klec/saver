@@ -45,7 +45,7 @@ public class Alpinizm extends JPanel implements ActionListener
 
     private void createScreenUpdate()
     {
-        Timer autoUpdate = new Timer(50, this );
+        Timer autoUpdate = new Timer(20, this );
         autoUpdate.setInitialDelay(2000);
         autoUpdate.start();
 
@@ -63,10 +63,12 @@ public class Alpinizm extends JPanel implements ActionListener
     }
 
     private void newPose(){
-        alpinist.handl.target = new Point2D.Double(-Math.random() * 40 -20, Math.random() * 60 -40);
-        alpinist.handr.target = new Point2D.Double( Math.random() * 40 + 20, Math.random() * 60-40);
-        alpinist.footl.target = new Point2D.Double(-Math.random() * 30, Math.random() * 20 + 40);
-        alpinist.footr.target = new Point2D.Double(Math.random() * 30, Math.random() * 20 + 40);
+        alpinist.handl.target = new Point2D.Double(-Math.random() * 40 - 20, Math.random() * 80 - 40);
+        alpinist.handr.target = new Point2D.Double( Math.random() * 40 + 20, Math.random() * 80 - 40);
+        if(Math.random()>0.6) {
+            alpinist.footl.target = new Point2D.Double(-Math.random() * 20, Math.random() * 5 + 52);
+            alpinist.footr.target = new Point2D.Double(Math.random() * 20, Math.random() * 5 + 52);
+        }
     }
 
     @Override
@@ -87,11 +89,11 @@ public class Alpinizm extends JPanel implements ActionListener
 
         private Alpinist(){
             body = new Line2D.Double(150,150,150,200);
-            head = new Ellipse2D.Double(145,130,10,16);
-            handl = new Lapa(body.getP1(), true, false);
-            handr = new Lapa(body.getP1(), true, true);
-            footl = new Lapa(body.getP2(), false, false);
-            footr = new Lapa(body.getP2(), false, true);
+            head = new Ellipse2D.Double(145,125,10,16);
+            handl = new Lapa(new Point2D.Double(body.getX1()-5,body.getY1()), true, false);
+            handr = new Lapa(new Point2D.Double(body.getX1()+5,body.getY1()), true, true);
+            footl = new Lapa(new Point2D.Double(body.getX2()-3,body.getY2()+3), false, false);
+            footr = new Lapa(new Point2D.Double(body.getX2()+3,body.getY2()+3), false, true);
         }
         public void render(Graphics2D g) {
             g.setColor(Color.black);
@@ -134,8 +136,8 @@ public class Alpinizm extends JPanel implements ActionListener
             if(isHand)  y = -10;
             else y= 40;
 
-            if(isLeft) x=-20;
-            else x = 20;
+            if(isLeft) x=20;
+            else x = -20;
             target = new Point2D.Double(x,y);
             this.start=start;
             MoveTo(start, target);
