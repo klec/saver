@@ -1,5 +1,3 @@
-// Tutorial 20: ScreenSaver.java
-// Program simulates screen saver by drawing random shapes.
 
 import javax.swing.*;
 import java.awt.*;
