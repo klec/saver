@@ -3,7 +3,10 @@
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -24,7 +27,7 @@ public class Alpinizm extends JPanel implements ActionListener
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     System.out.println(e.getPoint());
-                    alpinist.grab(e.getPoint());
+                    alpinist.SetTarget(e.getPoint());
                     repaint();
                 }
             }
@@ -45,7 +48,7 @@ public class Alpinizm extends JPanel implements ActionListener
 
     private void createScreenUpdate()
     {
-        Timer autoUpdate = new Timer(20, this );
+        Timer autoUpdate = new Timer(50, this );
         autoUpdate.setInitialDelay(2000);
         autoUpdate.start();
 
@@ -73,11 +76,12 @@ public class Alpinizm extends JPanel implements ActionListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(Math.random()>0.8) newPose();
-        alpinist.handl.MoveFor();
-        alpinist.handr.MoveFor();
-        alpinist.footl.MoveFor();
-        alpinist.footr.MoveFor();
+//        if(Math.random()>0.8) newPose();
+//        alpinist.handl.MoveFor();
+//        alpinist.handr.MoveFor();
+//        alpinist.footl.MoveFor();
+//        alpinist.footr.MoveFor();
+        alpinist.Move();
         repaint();
         //System.out.println("qw");
     }
@@ -86,15 +90,53 @@ public class Alpinizm extends JPanel implements ActionListener
         private Ellipse2D head;
         private Line2D body;
         private Lapa handl, handr, footl, footr;
+        private Point2D target;
 
         private Alpinist(){
             body = new Line2D.Double(150,150,150,200);
             head = new Ellipse2D.Double(145,125,10,16);
+            target = body.getP1();
             handl = new Lapa(new Point2D.Double(body.getX1()-5,body.getY1()), true, false);
             handr = new Lapa(new Point2D.Double(body.getX1()+5,body.getY1()), true, true);
             footl = new Lapa(new Point2D.Double(body.getX2()-3,body.getY2()+3), false, false);
             footr = new Lapa(new Point2D.Double(body.getX2()+3,body.getY2()+3), false, true);
         }
+
+        public void Move(){
+            Point2D curent = body.getP1();
+            int length = 2;
+            Point2D newPosition = curent;
+            if(target.distance(curent)<length) {
+                 newPosition = new Point2D.Double(target.getX(), target.getY());
+            }else{
+                if ((target.getX() - curent.getX()) != 0) {
+                    double a = Math.atan((target.getY() - curent.getY()) / (target.getX() - curent.getX()));
+                    if (target.getY() - curent.getY() < 0) length = -length;
+                    if (a < 0) length = -length;
+                    newPosition = new Point2D.Double(curent.getX()+length * Math.cos(a), curent.getY()+length * Math.sin(a));
+                }
+            }
+            body.setLine(newPosition.getX(),newPosition.getY(),newPosition.getX(),newPosition.getY()+50);
+            head = new Ellipse2D.Double(newPosition.getX()-5,newPosition.getY()-25,10,16);
+
+            moveHands();
+        }
+
+        private void moveHands() {
+            handl.start.setLocation(body.getX1()-5, body.getY1());
+            handr.start.setLocation(body.getX1()+5, body.getY1());
+            footl.start.setLocation(body.getX2()-3, body.getY2()+3);
+            footr.start.setLocation(body.getX2()+3, body.getY2()+3);
+            if(!handl.checkDistance())handl.getNewTarget();
+            if(!handr.checkDistance())handr.getNewTarget();
+            if(!footl.checkDistance())footl.getNewTarget();
+            if(!footr.checkDistance())footr.getNewTarget();
+        }
+
+        public void SetTarget(Point point){
+            target = point;
+        }
+
         public void render(Graphics2D g) {
             g.setColor(Color.black);
             handl.render(g);
@@ -106,19 +148,19 @@ public class Alpinizm extends JPanel implements ActionListener
             g.draw(head);
         }
 
-        public void grab(Point point) {
+        public void grab(Point2D.Double point) {
             Lapa nearest = footl;
-            if(point.distance(footr.branch.getP2())<point.distance(nearest.branch.getP2())) {
+            if(point.distance(footr.target)<point.distance(nearest.target)) {
                 nearest = footr;
             }
-            if(point.distance(handl.branch.getP2())<point.distance(nearest.branch.getP2())) {
+            if(point.distance(handl.target)<point.distance(nearest.target)) {
                 nearest = handl;
             }
-            if(point.distance(handr.branch.getP2())<point.distance(nearest.branch.getP2())) {
+            if(point.distance(handr.target)<point.distance(nearest.target)) {
                 nearest = handr;
             }
             //nearest.MoveTo(point);
-            nearest.target = new Point2D.Double(point.getX()-nearest.start.getX(), point.getY()-nearest.start.getY());
+            nearest.target = point;
         }
     }
 
@@ -126,44 +168,80 @@ public class Alpinizm extends JPanel implements ActionListener
         private int rootl=30, branchl=32;
         private float roots=6.0f, branchs=5.0f;
         private Line2D root, branch;
-        private Point2D start, target;
+        private Point2D.Double start, begin, end, target;
         private boolean isHand, isLeft;
 
-        public Lapa(Point2D start, boolean isHand, boolean isLeft){
+        public Lapa(Point2D.Double start, boolean isHand, boolean isLeft){
             this.isHand = isHand;
             this.isLeft = isLeft;
-            int x,y;
-            if(isHand)  y = -10;
-            else y= 40;
-
-            if(isLeft) x=20;
-            else x = -20;
-            target = new Point2D.Double(x,y);
             this.start=start;
-            MoveTo(start, target);
+            getNewTarget();
+            begin=target;
+            MoveTo(target);
+        }
+
+        public void getNewTarget(){
+            double x,y;
+            if(isHand)  y = start.getY()-10-Math.random()*10;
+            else y = start.getY()+40-Math.random()*10;
+
+            if(isLeft) x=start.getX()+20+Math.random()*20;
+            else x = start.getX()-20-Math.random()*20;
+
+            target = new Point2D.Double(x,y);
+
+        }
+
+        public boolean checkDistance(){
+            Point2D endPoint = new Point2D.Double(branch.getX2()-start.getX(),branch.getY2()-start.getY());
+            boolean result =
+                    (
+                        (isHand && endPoint.getY()<0 && endPoint.getY()>-40)||
+                        (!isHand && endPoint.getY()>0&& endPoint.getY()<50)
+                    ) &&
+                    (
+                        (!isLeft && endPoint.getX()>-40&& endPoint.getX()<0)||
+                        (isLeft && endPoint.getX()>0 && endPoint.getX()<40)
+                    )
+
+                && start.distance(branch.getP2())<60;
+
+            return result;
         }
 
         public void MoveTo(Point2D end){
-            Point2D.Double relativeEnd = new Point2D.Double(end.getX()-start.getX(),end.getY()-start.getY());
-            MoveTo(start, relativeEnd);
-        }
-
-        public void MoveTo(Point2D start, Point2D end){
-            Double R = end.distance(0, 0);
-            Double p1 = Math.acos(end.getX()/R);
+            Double R = end.distance(start);
+            Double p1 = Math.acos((end.getX()-start.getX())/R);
             Double p2 = Math.acos((Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2))/(2*R*rootl));
-            if(end.getX()<0 ) p2 = -p2;
-            if(end.getY()<0 ) p1 = -p1;
+            if(end.getX()-start.getX()<0) p2 = -p2;
+            if(end.getY()-start.getY()<0) p1 = -p1;
             if(!isHand) {p2 = -p2;}
 
             Double q1 = p1+p2; //plus minus for both sides
             Point2D.Double lokot = new Point2D.Double((rootl*Math.cos(q1))+start.getX(), (rootl*Math.sin(q1))+start.getY());
 
             root = new Line2D.Double(start,lokot);
-            branch = new Line2D.Double(lokot.getX(), lokot.getY(), start.getX()+end.getX(),start.getY()+end.getY());
+            branch = new Line2D.Double(lokot.getX(), lokot.getY(), end.getX(), end.getY());
+        }
+
+        public void Calculate(){
+            Double R = target.distance(start);
+            Double p1 = Math.acos((target.getX()-start.getX())/R);
+            Double p2 = Math.acos((Math.pow(R,2)+Math.pow(rootl,2)-Math.pow(branchl,2))/(2*R*rootl));
+            if(target.getX()-start.getX()<0 ) p2 = -p2;
+            if(target.getY()-start.getY()<0 ) p1 = -p1;
+            if(!isHand) {p2 = -p2;}
+
+            Double q1 = p1+p2; //plus minus for both sides
+            Point2D.Double lokot = new Point2D.Double((rootl*Math.cos(q1))+start.getX(), (rootl*Math.sin(q1))+start.getY());
+
+            root = new Line2D.Double(start,lokot);
+            branch = new Line2D.Double(lokot.getX(), lokot.getY(), target.getX(), target.getY());
+
         }
 
         public void render(Graphics2D g) {
+            Calculate(); //@todo add flag calculated
             g.setColor(Color.black);
             g.setStroke(new BasicStroke(roots, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.draw(root);
@@ -171,11 +249,11 @@ public class Alpinizm extends JPanel implements ActionListener
             g.draw(branch);
         }
 
-        public void MoveFor() {
-            Point2D.Double curent = new Point2D.Double(-start.getX() + branch.getX2(), - start.getY() + branch.getY2());
+        public void Move() {
+            Point2D.Double curent = (Point2D.Double) branch.getP2();
             int length = 2;
             if(target.distance(curent)<length) {
-                MoveTo(start, target);
+                MoveTo(target);
             }else{
                 if ((target.getX() - curent.getX()) != 0) {
                     double a = Math.atan((target.getY() - curent.getY()) / (target.getX() - curent.getX()));
