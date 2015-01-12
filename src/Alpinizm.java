@@ -18,7 +18,7 @@ public class Alpinizm extends JPanel implements ActionListener
     public Alpinizm(){
         setOpaque(true);
         this.setBackground(Color.GRAY);
-        alpinist = new Alpinist();
+        alpinist = new Alpinist(new Point2D.Float(150,150));
         createScreenUpdate();
         addMouseListener(
             new MouseAdapter() {
@@ -88,11 +88,11 @@ public class Alpinizm extends JPanel implements ActionListener
         private Ellipse2D head;
         private Line2D body;
         private Lapa handl, handr, footl, footr;
-        private Point2D target;
+        private Point2D target, direction=new Point2D.Double(0,0);
 
-        private Alpinist(){
-            body = new Line2D.Double(150,150,150,200);
-            head = new Ellipse2D.Double(145,125,10,16);
+        private Alpinist(Point2D startPoint){
+            body = new Line2D.Double(startPoint.getX(),startPoint.getY(),startPoint.getX(),startPoint.getY()+50);
+            head = new Ellipse2D.Double(startPoint.getX()-5,startPoint.getY()-25,10,16);
             target = body.getP1();
             handl = new Lapa(new Point2D.Double(body.getX1()-5,body.getY1()), true, false);
             handr = new Lapa(new Point2D.Double(body.getX1()+5,body.getY1()), true, true);
@@ -109,6 +109,7 @@ public class Alpinizm extends JPanel implements ActionListener
             }else{
                 if ((target.getX() - curent.getX()) != 0) {
                     double a = Math.atan((target.getY() - curent.getY()) / (target.getX() - curent.getX()));
+                    direction = new Point2D.Double(length * Math.cos(a), length * Math.sin(a));
                     if (target.getY() - curent.getY() < 0) length = -length;
                     if (a < 0) length = -length;
                     newPosition = new Point2D.Double(curent.getX()+length * Math.cos(a), curent.getY()+length * Math.sin(a));
@@ -125,10 +126,10 @@ public class Alpinizm extends JPanel implements ActionListener
             handr.start.setLocation(body.getX1()+5, body.getY1());
             footl.start.setLocation(body.getX2()-3, body.getY2()+3);
             footr.start.setLocation(body.getX2()+3, body.getY2()+3);
-            if(!handl.checkDistance())handl.getNewTarget();
-            if(!handr.checkDistance())handr.getNewTarget();
-            if(!footl.checkDistance())footl.getNewTarget();
-            if(!footr.checkDistance())footr.getNewTarget();
+            if(!handl.tooFar())handl.getNewTarget(direction);
+            if(!handr.tooFar())handr.getNewTarget(direction);
+            if(!footl.tooFar())footl.getNewTarget(direction);
+            if(!footr.tooFar())footr.getNewTarget(direction);
         }
 
         public void SetTarget(Point point){
@@ -173,24 +174,25 @@ public class Alpinizm extends JPanel implements ActionListener
             this.isHand = isHand;
             this.isLeft = isLeft;
             this.start=start;
-            getNewTarget();
+            getNewTarget(new Point2D.Double(0,0));
             begin=target;
             MoveTo(target);
         }
 
-        public void getNewTarget(){
-            double x,y;
-            if(isHand)  y = start.getY()-10-Math.random()*10;
-            else y = start.getY()+40-Math.random()*10;
+        public void getNewTarget(Point2D direction){
+            double x=start.getY();//+direction.getY()+1;
+            double y =start.getX();//+direction.getX()+1;
+            if(isHand)  y = start.getY()-20-Math.random()*10-direction.getY()*10;
+            else y = start.getY()+40-Math.random()*10-direction.getY()*10;
 
-            if(isLeft) x=start.getX()+20+Math.random()*20;
-            else x = start.getX()-20-Math.random()*20;
+            if(isLeft) x=start.getX()+20+Math.random()*20+direction.getX()*10;
+            else x = start.getX()-20-Math.random()*20-direction.getX()*10;
 
             target = new Point2D.Double(x,y);
 
         }
 
-        public boolean checkDistance(){
+        public boolean tooFar(){
             Point2D endPoint = new Point2D.Double(branch.getX2()-start.getX(),branch.getY2()-start.getY());
             boolean result =
                     (
@@ -198,8 +200,8 @@ public class Alpinizm extends JPanel implements ActionListener
                         (!isHand && endPoint.getY()>0&& endPoint.getY()<50)
                     ) &&
                     (
-                        (!isLeft && endPoint.getX()>-40&& endPoint.getX()<0)||
-                        (isLeft && endPoint.getX()>0 && endPoint.getX()<40)
+                        (!isLeft && endPoint.getX()<0)||
+                        (isLeft && endPoint.getX()>0 )
                     )
 
                 && start.distance(branch.getP2())<60;
