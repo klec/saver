@@ -46,7 +46,7 @@ public class MyPoint extends Line2D {
     public void render(Graphics2D g) {
         g.setColor(this.c);
         g.draw(this);
-        //move3();
+        move1();
     }
 
     private void move1() {
@@ -72,9 +72,9 @@ public class MyPoint extends Line2D {
 
     private void move2() {
         if(vx == 0)
-            this.vx=Math.random()*80-40;
+            this.vx=Math.random()*40-20;
         if(vy == 0)
-            this.vy=Math.random()*40-40;
+            this.vy=Math.random()*20-20;
 
         if(this.y>ssize.height+80){
             this.vy=-vy*0.5;

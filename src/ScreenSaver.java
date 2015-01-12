@@ -78,7 +78,7 @@ public class ScreenSaver extends JPanel implements ActionListener
                     p.init();
                 }
                 if(p.vx!=0 || p.vy!=0){
-                    p.move3();
+//                    p.move3();
                 }
 
                 p.render(g2);
@@ -90,8 +90,8 @@ public class ScreenSaver extends JPanel implements ActionListener
     private void createScreenUpdate()
     {
         Timer autoUpdate = new Timer(5, this );
-        autoUpdate.setInitialDelay(2000);
-        //autoUpdate.start();
+        autoUpdate.setInitialDelay(8000);
+        autoUpdate.start();
 
     }
 
@@ -105,7 +105,7 @@ public class ScreenSaver extends JPanel implements ActionListener
         ScreenSaver application = new ScreenSaver();
         Logo logo = new Logo();
         frame.add(logo);
-        //frame.add(application);
+        frame.add(application);
 
 //        frame.setVisible(true);
 
