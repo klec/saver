@@ -94,10 +94,10 @@ public class Alpinizm extends JPanel implements ActionListener
             body = new Line2D.Double(startPoint.getX(),startPoint.getY(),startPoint.getX(),startPoint.getY()+50);
             head = new Ellipse2D.Double(startPoint.getX()-5,startPoint.getY()-25,10,16);
             target = body.getP1();
-            handl = new Lapa(new Point2D.Double(body.getX1()-5,body.getY1()), true, false);
-            handr = new Lapa(new Point2D.Double(body.getX1()+5,body.getY1()), true, true);
-            footl = new Lapa(new Point2D.Double(body.getX2()-3,body.getY2()+3), false, false);
-            footr = new Lapa(new Point2D.Double(body.getX2()+3,body.getY2()+3), false, true);
+            handl = new Lapa(body, true, false);
+            handr = new Lapa(body, true, true);
+            footl = new Lapa(body, false, false);
+            footr = new Lapa(body, false, true);
         }
 
         public void Move(){
@@ -108,10 +108,11 @@ public class Alpinizm extends JPanel implements ActionListener
                  newPosition = new Point2D.Double(target.getX(), target.getY());
             }else{
                 if ((target.getX() - curent.getX()) != 0) {
-                    double a = Math.atan((target.getY() - curent.getY()) / (target.getX() - curent.getX()));
+                    double a = Math.atan2(target.getY() - curent.getY(), target.getX() - curent.getX());
+                    //System.out.println(a);
                     direction = new Point2D.Double(length * Math.cos(a), length * Math.sin(a));
-                    if (target.getY() - curent.getY() < 0) length = -length;
-                    if (a < 0) length = -length;
+                    //if (target.getY() - curent.getY() < 0) length = -length;
+                    //if (a < 0) length = -length;
                     newPosition = new Point2D.Double(curent.getX()+length * Math.cos(a), curent.getY()+length * Math.sin(a));
                 }
             }
@@ -170,23 +171,28 @@ public class Alpinizm extends JPanel implements ActionListener
         private Point2D.Double start, begin, end, target;
         private boolean isHand, isLeft;
 
-        public Lapa(Point2D.Double start, boolean isHand, boolean isLeft){
+        public Lapa(Line2D body, boolean isHand, boolean isLeft){
+            if(isHand && isLeft) start = new Point2D.Double((body.getX1()+5),body.getY1());
+            if(isHand && !isLeft) start = new Point2D.Double((body.getX1()-5),body.getY1());
+            if(!isHand && isLeft) start = new Point2D.Double(body.getX2()-3,body.getY2()+3);
+            if(!isHand && !isLeft) start = new Point2D.Double(body.getX2()+3,body.getY2()+3);
+
             this.isHand = isHand;
             this.isLeft = isLeft;
-            this.start=start;
             getNewTarget(new Point2D.Double(0,0));
             begin=target;
             MoveTo(target);
         }
 
         public void getNewTarget(Point2D direction){
+            System.out.println(direction);
             double x=start.getY();//+direction.getY()+1;
             double y =start.getX();//+direction.getX()+1;
-            if(isHand)  y = start.getY()-20-Math.random()*10-direction.getY()*10;
-            else y = start.getY()+40-Math.random()*10-direction.getY()*10;
+            if(isHand)  y = start.getY()-20-Math.random()*10+direction.getY()*8;
+            else y = start.getY()+40-Math.random()*10+direction.getY()*8;
 
-            if(isLeft) x=start.getX()+20+Math.random()*20+direction.getX()*10;
-            else x = start.getX()-20-Math.random()*20-direction.getX()*10;
+            if(isLeft) x=start.getX()+20+Math.random()*20+direction.getX()*8;
+            else x = start.getX()-20-Math.random()*20+direction.getX()*8;
 
             target = new Point2D.Double(x,y);
 
